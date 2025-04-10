@@ -1,29 +1,19 @@
 import requests
-from bs4 import BeautifulSoup as bs
-from urllib3 import disable_warnings
 
-disable_warnings()
-
-url = 'https://github.com/PowerShell/PowerShell/releases/tag/v7.5.0'
-target_filename = 'PowerShell-7.5.0-win-x64.exe'
-agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'}
+url = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
+arquivo = 'PowerShell-7.5.0-win-x64.msi'
 
 try:
+    resposta =  requests.get(url, stream=True)
+    resposta.raise_for_status()
 
-    requisicao = requests.get(url, headers=agent, verify=False, stream=True)
-    requisicao.raise_for_status()
+    with open(arquivo, 'wb') as file:
+        for chunk in resposta.iter_content(chunk_size=8192):
+            file.write(chunk)
 
-    site = bs(requisicao.text, 'html.parser')
-
-    for link in site.find_all('a'):
-        print(link)
+    print(f'Arquivo {arquivo} baixado com sucesso!')
 
 except requests.exceptions.RequestException as e:
-    print(f'Error during request: {e}')
-except Exception as e:
-    print(f'An unexpected error occurred: {e}')
-    
-    
-
-
-  
+    print(f'Erro ao baixar o arquivo: {e}')
+except IOError as e:
+    print(f'Erro ao salvar o arquivo: {e}')
